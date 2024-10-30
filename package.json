@@ -1,0 +1,14 @@
+{
+  "name": "my-library-backend",
+  "version": "1.0.0",
+  "description": "The API for handling requests made from the my-library frontend.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vagelis Kosmiadis",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1"
+  }
+}
