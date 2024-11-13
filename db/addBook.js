@@ -1,8 +1,6 @@
 import { getClient } from "./client.js";
 
 export default async function addBook (book) {
-    console.log('Loggin book from addBook function');
-    console.log(book);
     try {
         const client = await getClient();
         const booksCol = client.db('MyLibrary').collection('books');

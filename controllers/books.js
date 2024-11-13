@@ -1,5 +1,6 @@
 import Book from '../models/book.js';
 import getBook from '../db/getBook.js'
+import { isValid } from '../util/isValid.js';
 
 export const getMyBooks = async (req, res) => {
 
@@ -33,6 +34,7 @@ export const getMyBook = async (req, res) => {
 export const addBook = async (req, res) => {
     
     const book = req.body?.book;
+
     if (book) {
         const { 
             title, 
@@ -43,9 +45,6 @@ export const addBook = async (req, res) => {
             price, 
             isRead
         } = book;
-
-        //make a comparison because that is_read type is string and so the book object needs to be boolean.
-        
 
         const newBook = new Book(
             title, 
@@ -62,7 +61,6 @@ export const addBook = async (req, res) => {
             if (!err) {
                 return res.status(200).send({ response });
             }
-            console.log(err);
             return res.status(400).send({ response: err })
         });
     }
