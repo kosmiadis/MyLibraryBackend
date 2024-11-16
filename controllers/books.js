@@ -1,6 +1,8 @@
 import Book from '../models/book.js';
 import getBook from '../db/getBook.js'
-import { isValid } from '../util/isValid.js';
+import deleteBook from '../db/deleteBook.js';
+import updateBook from '../db/updateBook.js';
+
 
 export const getMyBooks = async (req, res) => {
 
@@ -25,10 +27,10 @@ export const getMyBook = async (req, res) => {
         if (!err) {
             return res.status(200).send({ err, book });
         }
-        return res.status(400).send({err, book: []});
+        return res.status(400).send({err, book: null});
     }
     //if id is null or undefined
-    return res.status(400).send({ errorMessage: 'Book does not exist!', book: [] });
+    return res.status(400).send({ errorMessage: 'Book does not exist!', book: null });
 }
 
 export const addBook = async (req, res) => {
@@ -68,3 +70,34 @@ export const addBook = async (req, res) => {
         res.status(400).send({ response: "Something went wrong!"})
     }
 };
+
+export const deleteBookController = async (req, res) => {
+    const body = req.body;
+    const bookId = body?.id;
+    //if id is found.
+    if (bookId) {
+        const { err, message } = await deleteBook(bookId);
+        if (!err) {
+            return res.status(200).send({ message });
+        }
+        return res.status(400).send({ message });
+    }
+
+    //if id is null or undefined.
+    return res.status(400).send({ message: 'Could not find book to delete!' });
+}
+
+export const updateBookController = async (req, res) => {
+    const book = req.body?.book;
+
+    if (book) {        
+        const { err, message } = await updateBook(book);
+        if (!err) {
+            return res.status(200).send({ message });
+        }
+        return res.status(400).send({ message });
+    }
+    else {
+        res.status(400).send({ response: "Something went wrong!"})
+    }
+}

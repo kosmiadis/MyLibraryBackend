@@ -1,7 +1,6 @@
 import {isValid} from "../util/isValid.js";
 
 const validateFormData = (req, res, next) => {
-
     const { 
         title, 
         description, 
@@ -11,6 +10,8 @@ const validateFormData = (req, res, next) => {
         price, 
         isRead
     } = req.body?.book;
+
+    console.log(req.body?.book);
 
     const validateData = [
         {value: title, type: 'text'},
@@ -26,8 +27,7 @@ const validateFormData = (req, res, next) => {
     //validate data, if errors found, they will be appended to the errors list.
     for (let d of validateData) {
         isValid(d.value, d.type, errors);
-    };
-    
+    }
     
     const validationPassed = errors.length === 0;
 

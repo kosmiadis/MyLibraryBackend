@@ -2,6 +2,7 @@ import addBook from "../db/addBook.js";
 import getBooks from "../db/getBooks.js";
 
 export default class Book {
+    
     constructor(title, description, author, imgUrl, personalRating, price, isRead) {
         this.title = title;
         this.description = description;
@@ -10,11 +11,6 @@ export default class Book {
         this.personalRating = personalRating;
         this.price = price;
         this.isRead = isRead;
-    }
-
-    //return book info
-    getInfo(bookId, cb) {
-        
     }
 
     //saves the book
@@ -31,11 +27,6 @@ export default class Book {
 
         const { success, message } = await addBook(book);
         return cb(success, message);
-    }
-
-    //deletes the book
-    delete() {
-
     }
 
     static async allBooks (cb) {

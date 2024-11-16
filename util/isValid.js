@@ -7,7 +7,7 @@ export function isValid (value, inputType, errors) {
             validation.isValid = false;
             validation.errMessage = 'Please fill all empty fields!'
         }
-        if (inputType === 'personal_rating' && !(value > 0 & value < 10)) {
+        if (inputType === 'personal_rating' && !(value >= 0 & value <= 10)) {
             validation.isValid = false;
             validation.errMessage = 'Personal Rating must range from 1 to 10!'
         }
