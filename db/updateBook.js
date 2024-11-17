@@ -22,8 +22,11 @@ export default async function updateBook (book) {
                 isRead: isRead
             },
         })
-        console.log(update);
-        return { err: false, message: 'Book was updated.' };
+        if (update.modifiedCount === 1) {
+            return { err: false, message: 'Book was updated.' };
+        }
+        return { err: true, message: 'Book was not found to update!' }
+        
     } catch (e) {
         const error = new Error('Something went wrong! Book was not updated.')
         return { err: true, message: error.message }
