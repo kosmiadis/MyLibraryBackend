@@ -6,16 +6,13 @@ import updateBook from '../db/updateBook.js';
 
 export const getMyBooks = async (req, res) => {
 
-    const isReadQuery = req.query['isRead'];
-    const isRead = isReadQuery === 'true';
 
     Book.allBooks((err, books) => {
         if (!err) {
-            const filteredBooks = [...books].filter(book => book.isRead === isRead);
-            return res.status(200).send({ books: filteredBooks });
+            return res.status(200).send({ books });
         }
         return res.status(400).send({ books: null, errorMessage: err.message })
-    })
+    }) 
 };
 
 export const getMyBook = async (req, res) => {

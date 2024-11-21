@@ -25,10 +25,9 @@ export default async function updateBook (book) {
         if (update.modifiedCount === 1) {
             return { err: false, message: 'Book was updated.' };
         }
-        return { err: true, message: 'Book was not found to update!' }
-        
+        return { err: true, message: 'Book was not found to update!' };
     } catch (e) {
-        const error = new Error('Something went wrong! Book was not updated.')
-        return { err: true, message: error.message }
-    }
+        const error = new Error('Something went wrong! Book was not updated.');
+        return { err: true, message: error.message };
+    };
 };
