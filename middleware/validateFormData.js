@@ -11,8 +11,6 @@ const validateFormData = (req, res, next) => {
         isRead
     } = req.body?.book;
 
-    console.log(req.body?.book);
-
     const validateData = [
         {value: title, type: 'text'},
         {value: description, type: 'text'},

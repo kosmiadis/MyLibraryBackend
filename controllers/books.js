@@ -5,8 +5,6 @@ import updateBook from '../db/updateBook.js';
 
 
 export const getMyBooks = async (req, res) => {
-
-
     Book.allBooks((err, books) => {
         if (!err) {
             return res.status(200).send({ books });
