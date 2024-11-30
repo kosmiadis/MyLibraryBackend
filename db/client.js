@@ -14,13 +14,15 @@ const client = new MongoClient(uri, {
 
 let isConnected = false;
 
-
 export async function getClient() {
-  const booksCollection = client.db('MyLibrary').collection('books');
   if (!isConnected) {
     await client.connect();
     isConnected = true;
   }
 
-  return { booksCollection, client };
+  const booksCollection = client.db('MyLibrary').collection('books');
+  const usersCollection = client.db('MyLibrary').collection('users');
+
+
+  return { booksCollection, usersCollection, client };
 }

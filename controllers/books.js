@@ -1,31 +1,32 @@
 import Book from '../models/book.js';
-import getBook from '../db/getBook.js'
-import deleteBook from '../db/deleteBook.js';
-import updateBook from '../db/updateBook.js';
 
-
-export const getMyBooks = async (req, res) => {
-    Book.allBooks((err, books) => {
-        if (!err) {
-            return res.status(200).send({ books });
-        }
-        return res.status(400).send({ books: null, errorMessage: err.message })
-    }) 
+export const getBooks = async (req, res) => {
+    Book.getAllBooks()
+    .then((books) => {
+        return res.status(200).send({ books: books || null });
+    })
+    .catch(e => {
+        return res.status(400).send({ message: e.message })
+    })
 };
 
-export const getMyBook = async (req, res) => {
+export const getBook = async (req, res) => {
     const params = req.params;
     const bookId = params?.id;
     //if id is initialized
     if (bookId) {
-        const { err, book } = await getBook(bookId);
-        if (!err) {
-            return res.status(200).send({ err, book });
-        }
-        return res.status(400).send({err, book: null});
+        Book.findBookById(bookId)
+        .then(book => {
+            return res.status(200).send({ book });
+        })
+        .catch(e => {
+            return res.status(400).send({ message: e.message });
+        })
     }
-    //if id is null or undefined
-    return res.status(400).send({ errorMessage: 'Book does not exist!', book: null });
+    else {
+        //if id is null or undefined
+        return res.status(400).send({ message: 'Book does not exist!', book: null });
+    }
 }
 
 export const addBook = async (req, res) => {
@@ -54,45 +55,52 @@ export const addBook = async (req, res) => {
         );
     
         //save the book to the db.
-        newBook.save((err, response) => {
-            if (!err) {
-                return res.status(200).send({ response });
-            }
-            return res.status(400).send({ response: err })
-        });
+        newBook.save()
+        .then(res => {
+            return res.status(200).send({ message: res.message })
+        })
+        .catch(e => {
+            return res.status(400).send({ message: e.message })
+        })
     }
     else {
-        res.status(400).send({ response: "Something went wrong!"})
+        res.status(400).send({ message: "Something went wrong!"})
     }
 };
 
-export const deleteBookController = async (req, res) => {
+export const deleteBook = async (req, res) => {
     const body = req.body;
     const bookId = body?.id;
     //if id is found.
     if (bookId) {
-        const { err, message } = await deleteBook(bookId);
-        if (!err) {
-            return res.status(200).send({ message });
-        }
-        return res.status(400).send({ message });
+        Book.deleteBook(bookId)
+        .then(response => {
+            return res.status(200).send({ message: response.message })
+        })
+        .catch(e => {
+            return res.status(400).send({ message: e.message })
+        })
     }
-
-    //if id is null or undefined.
-    return res.status(400).send({ message: 'Could not find book to delete!' });
+    else {
+        //if id is null or undefined.
+        return res.status(400).send({ message: 'Could not find book!' });
+    }
+    
 }
 
-export const updateBookController = async (req, res) => {
+export const updateBook = async (req, res) => {
     const book = req.body?.book;
 
     if (book) {        
-        const { err, message } = await updateBook(book);
-        if (!err) {
-            return res.status(200).send({ message });
-        }
-        return res.status(400).send({ message });
+        Book.updateBook(book)
+        .then(updateRes => {
+            return res.status(200).send({ message: updateRes.message});
+        })
+        .catch(e => {
+            return res.status(400).send({ message: e.message });
+        })
     }
     else {
-        res.status(400).send({ response: "Something went wrong!"})
+        return res.status(400).send({ message: 'Something went wrong!'})
     }
 }
