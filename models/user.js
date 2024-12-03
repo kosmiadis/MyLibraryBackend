@@ -1,14 +1,14 @@
 import { generateToken } from "../util/generateToken.js";
 import { getClient } from "../db/client.js";
 import bcrypt from 'bcrypt';
+import { isObjectEmpty } from "../util/isObjectEmpty.js";
 
 export default class User {
-    constructor (firstName, lastName, age, birthDate, username, password) {
+    constructor (firstName, lastName, age, email, username, password) {
         this.firstName = firstName,
         this.lastName = lastName,
         this.age = age,
-        this.birthDate = birthDate,
-        this.username = username,
+        this.email = email
         this.username = username,
         this.password = password
     }
@@ -33,10 +33,15 @@ export default class User {
     static async findUserByEmail(email) {
         try {
             const { usersCollection } = await getClient();
-            return await usersCollection.findOne({ email });
+            const foundUser = await usersCollection.findOne({ email });
+            if (isObjectEmpty(foundUser)) {
+                throw new Error('User does not exist!')
+            }
+            else {
+                return foundUser;
+            }
         } catch (e) {
-            const error = new Error('Could not find User!')
-            throw error
+            throw new Error('User does not exist!')
         };
     }
 

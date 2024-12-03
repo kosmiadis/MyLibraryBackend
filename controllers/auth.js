@@ -2,6 +2,7 @@ import User from '../models/user.js';
 import { generateToken } from '../util/generateToken.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { isObjectEmpty } from '../util/isObjectEmpty.js';
 
 export const postLogin = async (req, res) => {
     const { email, password } = req.body;
@@ -46,27 +47,33 @@ export const getLogout = async (req, res) => {
 export const postSignup = async (req, res) => {
     const user = req.body?.user;
 
-    User.createUser(user)
-    .then(({ token, userId }) => {
-        return res.status(201).cookie('_t', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'Strict',
-            maxAge: 1000 * 60 * 60 * 2, // 2 hours
-        }).send({ isAuthorized: true, 
-            user: {
-                _id: userId,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                username: user.username,
-                age: user.age,
-                birthDate: user.birthDate,
-                email: user.email
-            } })
+    User.findUserByEmail(user.email)
+    .then(user => {
+        return res.status(400).send({ isAuthorized: false, message: 'User already exists!'})
     })
     .catch(e => {
-        return res.status(400).send({ isAuthorized: false, message: e.message })
-    })
+            User.createUser(user)
+            .then(({ token, userId }) => {
+                return res.status(201).cookie('_t', token, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'Strict',
+                    maxAge: 1000 * 60 * 60 * 2, // 2 hours
+                }).send({ isAuthorized: true, 
+                    user: {
+                        _id: userId,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        username: user.username,
+                        age: user.age,
+                        birthDate: user.birthDate,
+                        email: user.email
+                    } })
+            })
+            .catch(e => {
+                return res.status(400).send({ isAuthorized: false, message: e.message })
+            })
+        })
 }
 
 export const getUser = async (req, res) => {
@@ -75,11 +82,19 @@ export const getUser = async (req, res) => {
 
     User.findUserByEmail(decoded.email)
     .then(user => {
-        return res.status(200).send({ user });
+        return res.status(200).send({ user: {
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            username: user.username,
+            age: user.age,
+            birthDate: user.birthDate,
+            email: user.email
+        } });
     })
     .catch(e => {
         return res.status(400).send({ message: e.message })
-    })   
+    })
 }
 
 export const updateUser = async (req, res) => {
