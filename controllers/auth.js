@@ -2,7 +2,6 @@ import User from '../models/user.js';
 import { generateToken } from '../util/generateToken.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { isObjectEmpty } from '../util/isObjectEmpty.js';
 
 export const postLogin = async (req, res) => {
     const { email, password } = req.body;
@@ -19,7 +18,7 @@ export const postLogin = async (req, res) => {
                     sameSite: 'Strict', 
                     maxAge: 1000 * 60 * 60 * 2, // 2 hours
                 }).send({ 
-                    isAuthorized: true, 
+                    isAuthorized: true,
                     user: {
                         _id: user._id,
                         firstName: user.firstName,
@@ -27,7 +26,8 @@ export const postLogin = async (req, res) => {
                         username: user.username,
                         age: user.age,
                         birthDate: user.birthDate,
-                        email: user.email
+                        email: user.email,
+                        //books: []
                     }
                 })}
             else {
@@ -48,7 +48,7 @@ export const postSignup = async (req, res) => {
     const user = req.body?.user;
 
     User.findUserByEmail(user.email)
-    .then(user => {
+    .then(() => {
         return res.status(400).send({ isAuthorized: false, message: 'User already exists!'})
     })
     .catch(e => {
@@ -59,7 +59,7 @@ export const postSignup = async (req, res) => {
                     secure: true,
                     sameSite: 'Strict',
                     maxAge: 1000 * 60 * 60 * 2, // 2 hours
-                }).send({ isAuthorized: true, 
+                }).send({ isAuthorized: true,
                     user: {
                         _id: userId,
                         firstName: user.firstName,

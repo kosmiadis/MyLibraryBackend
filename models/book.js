@@ -1,74 +1,88 @@
 import { ObjectId } from "mongodb";
 import { getClient } from "../db/client.js";
 
-const { booksCollection } = await getClient();
+const { booksCollection, usersCollection } = await getClient();
 
 export default class Book {
     
-    constructor(title, description, author, imgUrl, personalRating, price, isRead) {
+    constructor(title, description, author, imgUrl, price, isRead,type) {
         this.title = title;
         this.description = description;
         this.author = author;
         this.imgUrl = imgUrl;
-        this.personalRating = personalRating;
         this.price = price;
-        this.isRead = isRead;
+        this.type = type // Wishlist or In possesion
+        this.isRead = isRead
     }
 
     //saves the book
-    async save() {
+    async save(user) {
         const book = {
+            _id: new ObjectId(),
             title: this.title,
             description: this.description,
             author: this.author,
             imgUrl: this.imgUrl,
-            personalRating: this.personalRating,
+            type: this.type,
             price: this.price,
             isRead: this.isRead,
         }
 
         try {
-            booksCollection.insertOne({...book})
-            .then(() => {
-                return {message: 'Book was added'};
+            const result = await usersCollection.updateOne({ email: user.email }, {
+                $push: { books: book }
             })
+
+            if (result.modifiedCount === 0) {
+                throw new Error('Book was not added!')
+            }
+            return 'Book was added';
         } catch (e) {
             throw new Error('Something went wrong! Book was not added.')
-        } 
+        }
     }
 
-    static async findBookById (id) {
+    static async findBookById (user, id) {
         try {
-            const book = booksCollection.findOne({ _id: ObjectId.createFromHexString( id ) });
-            return book;
+            const foundUser = await usersCollection.findOne({ email: user.email });
+            const books = foundUser?.books || [];
             
-          } catch (e) {
-            throw new Error('Could not load book!')
-          }
+            // Properly compare ObjectId
+            const book = books.find(b => b._id.equals(ObjectId.createFromHexString(id)));
+            if (!book) {
+                throw new Error('Book not found!');
+            }
+            return book;
+        } catch (e) {
+            throw new Error('Could not load book!');
+        }
     }
 
-    static async getAllBooks () {
+    static async getAllBooks (user) {
         try {
-            const books = await booksCollection.find().toArray();
-            return books;
+            const foundUser = await usersCollection.findOne({ email: user.email });
+            return foundUser?.books;
         } catch (e) {
             throw new Error('Could not load books.');
         }
     }
 
-    static async deleteBook (id) {
+    static async deleteBook (user, id) {
         try {
-            const delRes = await booksCollection.deleteOne({ _id: ObjectId.createFromHexString(id) });
+            const foundUser = await usersCollection.findOne({ email: user.email });
+            const books = foundUser?.books;
+            const updatedBooks = books.filter(b => !(b._id.equals(ObjectId.createFromHexString(id))));
+    
             
-            if ( delRes.deletedCount === 1) {
-                return { message: 'Book was deleted.'}
+            const updated = await usersCollection.updateOne({ email: user.email }, {
+                $set: { books: updatedBooks }
+            })
+            if (updated.modifiedCount === 0) {
+                throw new Error('Book was not deleted');
             }
-            else {
-                throw new Error('Book was not deleted!')
-            }
-            
+            return 'Book was deleted'
         } catch (e) {
-            throw new Error(e.message);
+            throw new Error('Book was not deleted!');
         } 
     }
 
@@ -91,12 +105,9 @@ export default class Book {
                 },
             })
             if (updateRes.modifiedCount === 1) {
-                return { message: 'Book was updated.' };
-            }
-            else {
-                throw new Error('Book was not updated!')
+                throw new Error('Book was not updated.');
             }
         } catch (e) {
-            throw new Error(e.message);
+            throw new Error('Something went wrong book was not added!');
         }}
 }

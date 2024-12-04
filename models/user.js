@@ -17,7 +17,7 @@ export default class User {
         try {
             const { usersCollection } = await getClient();
             const encryptedPass = await bcrypt.hash(user.password, 12)
-            const { insertedId } = await usersCollection.insertOne({...user, password: encryptedPass});
+            const { insertedId } = await usersCollection.insertOne({...user, password: encryptedPass, books: []});
             if (insertedId) {
                 return { token: generateToken(user.email), userId: insertedId};
             }

@@ -5,8 +5,8 @@ const validateFormData = (req, res, next) => {
         title, 
         description, 
         author, 
-        img_url, 
-        personal_rating, 
+        imgUrl, 
+        type, 
         price, 
         isRead
     } = req.body?.book;
@@ -15,8 +15,8 @@ const validateFormData = (req, res, next) => {
         {value: title, type: 'text'},
         {value: description, type: 'text'},
         {value: author, type: 'text'},
-        {value: img_url, type: 'text'},
-        {value: personal_rating, type: 'personal_rating'},
+        {value: imgUrl, type: 'text'},
+        {value: type, type: 'text'},
         {value: price, type: 'price'},
         {value: isRead, type: 'isRead'},
     ]
