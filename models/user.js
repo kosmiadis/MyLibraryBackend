@@ -63,4 +63,17 @@ export default class User {
             throw new Error('Could not update User! Try again later.')
         };
     }
+
+    static async deleteAccount (email) {
+        try {
+            const { usersCollection } = await getClient();
+            const delResults = await usersCollection.deleteOne({ email })
+            if (delResults.deletedCount === 0) {
+                throw new Error('Account Deletion Failed!');
+            }
+            return 'Account Deletion Successful!'
+        } catch (e) {
+            throw new Error(e.message)
+        }
+    }
 }

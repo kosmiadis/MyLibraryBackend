@@ -32,7 +32,7 @@ const validateFormData = (req, res, next) => {
     if (!validationPassed) {
         const uniqueErrors  =
         [...new Set(errors.map(JSON.stringify))].map(JSON.parse);
-        return res.status(400).send(uniqueErrors);
+        return res.status(400).send({ uniqueErrors });
     }
     next();
 }

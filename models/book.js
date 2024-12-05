@@ -1,7 +1,7 @@
-import { ObjectId } from "mongodb";
+import { ObjectId, } from "mongodb";
 import { getClient } from "../db/client.js";
 
-const { booksCollection, usersCollection } = await getClient();
+const { usersCollection } = await getClient();
 
 export default class Book {
     
@@ -43,16 +43,27 @@ export default class Book {
     }
 
     static async findBookById (user, id) {
+        
         try {
-            const foundUser = await usersCollection.findOne({ email: user.email });
-            const books = foundUser?.books || [];
-            
-            // Properly compare ObjectId
-            const book = books.find(b => b._id.equals(ObjectId.createFromHexString(id)));
-            if (!book) {
+            const result = await usersCollection.aggregate([
+                { $match: { email: user.email } },
+                {
+                    $project: {
+                        books: {
+                            $filter: {
+                                input: "$books",
+                                as: "book",
+                                cond: { $eq: ["$$book._id", ObjectId.createFromHexString(id)] }
+                            }
+                        }
+                    }
+                }
+            ]).toArray();
+            const foundBookList = result[0].books;
+            if (foundBookList?.length === 0) {
                 throw new Error('Book not found!');
             }
-            return book;
+            return foundBookList?.[0];
         } catch (e) {
             throw new Error('Could not load book!');
         }
@@ -61,7 +72,8 @@ export default class Book {
     static async getAllBooks (user) {
         try {
             const foundUser = await usersCollection.findOne({ email: user.email });
-            return foundUser?.books;
+            const books = foundUser?.books;
+            return books;
         } catch (e) {
             throw new Error('Could not load books.');
         }
@@ -69,44 +81,41 @@ export default class Book {
 
     static async deleteBook (user, id) {
         try {
-            const foundUser = await usersCollection.findOne({ email: user.email });
-            const books = foundUser?.books;
-            const updatedBooks = books.filter(b => !(b._id.equals(ObjectId.createFromHexString(id))));
-    
-            
-            const updated = await usersCollection.updateOne({ email: user.email }, {
-                $set: { books: updatedBooks }
-            })
+            const updated = await usersCollection.updateOne(
+                { email: user.email },
+                { $pull: { books: { _id: ObjectId.createFromHexString(id) } } }
+            );
+
             if (updated.modifiedCount === 0) {
-                throw new Error('Book was not deleted');
+                throw new Error('Book not found or already deleted');
             }
-            return 'Book was deleted'
+            return 'Book was successfully deleted';
+
         } catch (e) {
             throw new Error('Book was not deleted!');
         } 
     }
 
-    static async updateBook (book) {
-        const { id, title, description, author, personal_rating, price, img_url, isRead } = book;
-
+    static async updateBook (user, updatedBook) {
         try {
-            if (!ObjectId.isValid(id)) {
-                throw new Error('Something went wrong! Please try again later.');
-            }
-            const updateRes = await booksCollection.updateOne({ _id: ObjectId.createFromHexString( id )}, {
-                $set: {
-                    title: title,
-                    description: description,
-                    author: author,
-                    personalRating: personal_rating,
-                    price: price,
-                    imgUrl: img_url,
-                    isRead: isRead
-                },
-            })
-            if (updateRes.modifiedCount === 1) {
+            const updated = await usersCollection.updateOne(
+                { email: user.email, "books._id": ObjectId.createFromHexString(updatedBook.id) }, // Match email and specific book
+                {
+                    $set: {
+                        "books.$.title": updatedBook.title,
+                        "books.$.author": updatedBook.author,
+                        "books.$.description": updatedBook.description,
+                        "books.$.price": updatedBook.price,
+                        "books.$.imgUrl": updatedBook.imgUrl,
+                        "books.$.type": updatedBook.type
+                    }
+                }
+            );
+
+            if (updated.modifiedCount === 0) {
                 throw new Error('Book was not updated.');
             }
+            return 'Book was updated!'
         } catch (e) {
             throw new Error('Something went wrong book was not added!');
         }}

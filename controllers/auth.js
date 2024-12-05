@@ -113,3 +113,16 @@ export const updateUser = async (req, res) => {
         return res.status(400).send({ message: e.message })
     })
 }
+
+export const deleteUser = async (req, res) => {
+    const token = req.cookies?._t
+    const decoded = jwt.decode(token);
+    
+    User.deleteAccount(decoded.email)
+    .then(responseMessage => {
+        return res.status(200).send({ message: responseMessage })
+    })
+    .catch(e => {
+        return res.status(400).send({ message: e.message });
+    })
+}

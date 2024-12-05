@@ -9,7 +9,7 @@ export const getBooks = async (req, res) => {
     .then(user => {
         Book.getAllBooks(user)
         .then((books) => {
-            return res.status(200).send({ books: books || null });
+            return res.status(200).send({ books: books });
         })
         .catch(e => {
             return res.status(400).send({ message: e.message })
@@ -22,6 +22,7 @@ export const getBook = async (req, res) => {
     const bookId = params?.id;
     const authToken = req?.cookies._t;
     const decodedUser = decodeToken(authToken);
+
     //if id is initialized
     if (bookId) {
         User.findUserByEmail(decodedUser.email)
@@ -110,17 +111,20 @@ export const deleteBook = async (req, res) => {
 
 export const updateBook = async (req, res) => {
     const book = req.body?.book;
-
-    if (book) {        
-        Book.updateBook(book)
-        .then(updateRes => {
-            return res.status(200).send({ message: updateRes.message});
+    const authToken = req.cookies?._t;
+    const decodedToken = decodeToken(authToken);
+      
+    User.findUserByEmail(decodedToken.email)
+    .then(user => {
+        Book.updateBook(user, book)
+        .then(updateResMessage => {
+            return res.status(200).send({ message: updateResMessage});
         })
         .catch(e => {
             return res.status(400).send({ message: e.message });
         })
-    }
-    else {
+    })
+    .catch(() => {
         return res.status(400).send({ message: 'Something went wrong!'})
-    }
+    })
 }

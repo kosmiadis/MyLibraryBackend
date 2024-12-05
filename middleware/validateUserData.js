@@ -25,8 +25,6 @@ export function validateUserSignupData (req, res, next) {
     return next();
 }
 
-
-
 function isEmpty (value) {
     return value.trim() === ''
 }
